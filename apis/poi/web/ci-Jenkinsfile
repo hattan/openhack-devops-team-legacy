@@ -20,17 +20,22 @@ node {
           usernameVariable: 'ACR_USER',
           passwordVariable: 'ACR_PASSWORD']])
           {
-            sh  "docker -H tcp://${DOCKER_BUILD_PUSH_HOST} login ${ACR_ENDPOINT} -u '${ACR_USER}' -p '${ACR_PASSWORD}'"
+            sh  "docker -H ${DOCKER_BUILD_PUSH_HOST} login ${ACR_ENDPOINT} -u '${ACR_USER}' -p '${ACR_PASSWORD}'"
           }
             
         }
         stage('build')
         {
-            sh "docker -H tcp://${DOCKER_BUILD_PUSH_HOST} build -t ${ACR_ENDPOINT}/team4-poi:${BUILD_TAG} $WORKSPACE/apis/poi"
+            sh "docker -H ${DOCKER_BUILD_PUSH_HOST} build -t ${ACR_ENDPOINT}/team4-poi:${BUILD_TAG} $WORKSPACE/apis/poi"
+        }
+        stage('integration-test')
+        {
+            sh "docker -H ${DOCKER_BUILD_PUSH_HOST} build --target build-env -t poi-integration-test $WORKSPACE/apis/poi"
+            sh "docker -H ${DOCKER_BUILD_PUSH_HOST} run poi-integration-test /bin/bash -c 'dotnet restore tests/IntegrationTests/IntegrationTests.csproj; dotnet test tests/IntegrationTests/IntegrationTests.csproj | tee /tmp/test; if grep \"Test Run Failed\" /tmp/test > /dev/null; then exit -1; else exit 0; fi'"
         }
         stage('push')
         {
-            sh  "docker -H tcp://${DOCKER_BUILD_PUSH_HOST} push ${ACR_ENDPOINT}/team4-poi:${BUILD_TAG}"
+            sh  "docker -H ${DOCKER_BUILD_PUSH_HOST} push ${ACR_ENDPOINT}/team4-poi:${BUILD_TAG}"
         }
         stage('Helm Install'){
             sh "export KUBECONFIG=/var/jenkins_home/.kube/config"
