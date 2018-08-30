@@ -38,7 +38,7 @@ stages
         steps
         {
             sh "docker -H ${DOCKER_BUILD_PUSH_HOST} build --target build-env -t poi-integration-test $WORKSPACE/apis/poi"
-            sh "docker -H ${DOCKER_BUILD_PUSH_HOST} run poi-integration-test /bin/bash -c 'dotnet restore tests/IntegrationTests/IntegrationvTests.csproj > /dev/null; dotnet test tests/IntegrationTests/IntegrationTests.csproj | grep \"Test Run Failed.\" > /dev/null; then exit -1; else exit 0; fi'"
+            sh "docker -H ${DOCKER_BUILD_PUSH_HOST} run poi-integration-test /bin/bash -c 'dotnet restore tests/IntegrationTests/IntegrationvTests.csproj > /dev/null; if dotnet test tests/IntegrationTests/IntegrationTests.csproj | grep \"Test Run Failed.\" > /dev/null; then exit -1; else exit 0; fi'"
         }
     }
 }
