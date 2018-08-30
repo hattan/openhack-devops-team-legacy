@@ -1,0 +1,29 @@
+//Query Performance in SQL Database
+AzureDiagnostics
+| where Category=="QueryStoreRuntimeStatistics"
+| where ResourceId == '/SUBSCRIPTIONS/620F16A0-6DD6-4E50-8E87-AC667A0F63EB/RESOURCEGROUPS/OPENHACKHYQ7RG/PROVIDERS/MICROSOFT.SQL/SERVERS/OPENHACKHYQ7SQL/DATABASES/MYDRIVINGDB'
+| extend interval_start_time_date = round(interval_start_time_d / 4294967296, 0)
+| extend interval_start_time_time = interval_start_time_d - 4294967296 * interval_start_time_date
+| extend interval_start_t = datetime(1900-1-1) + time(1d) * interval_start_time_date + time(1s) * (interval_start_time_time / 300.0)
+| summarize max = max(max_duration_d)/1000000,  avg = sum(duration_d)/sum(count_executions_d)/1000000 by bin(interval_start_t, 15m)
+| render timechart
+
+//Available Memory in Disk
+Usage
+| where QuantityUnit == "MBytes"
+| summarize AggregatedValue = sum((Quantity / 1024)) by Computer
+| sort by AggregatedValue desc
+
+
+//Get data from logs (Each API)
+ContainerLog | where LogEntry contains "Request finished in" | project LogEntry | extend POI_RESPONSE_TIME = replace(@"(Request finished in)(.*)(ms.*)",@"\2",LogEntry) 
+  
+ContainerLog | where LogEntry contains "/api/trip" | where LogEntry contains "POST" | project LogEntry | extend TRIP_RESPONSE_TIME = replace(@"(.*CreateTripPoint)(.*)(ms.*)",@"\2", LogEntry)
+  
+ContainerLog | where LogEntry contains "Go-http-client/" | project LogEntry | extend USER_RESPONSE_TIME = replace(@"(.*Go-http-client/1.1)(.*)(ms.*)",@"\2", LogEntry)
+
+You have to enable in LogAnalytics (Container and SQL Analytics in Azure Portal)
+
+Install AppInsights to get requests information
+
+Create a shared Dashboard in Azure Portal to consolidate all the data
