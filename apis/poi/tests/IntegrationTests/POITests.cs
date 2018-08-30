@@ -49,8 +49,6 @@ namespace IntegrationTests
             //Check that 3 pois are returned
             Assert.Equal(3,
             pois.Count);
-
-            Assert.Equal(1, 2);
         }
     }
 }
