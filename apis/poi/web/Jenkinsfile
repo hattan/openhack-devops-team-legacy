@@ -33,14 +33,6 @@ stages
             sh "docker -H tcp://${DOCKER_BUILD_PUSH_HOST} build -t ${ACR_ENDPOINT}/team4-poi:${BUILD_TAG} $WORKSPACE/apis/poi"
         }
     }
-    stage('integration-test')
-    {
-        steps
-        {
-            sh "docker -H ${DOCKER_BUILD_PUSH_HOST} build --target build-env -t poi-integration-test $WORKSPACE/apis/poi"
-            sh "docker -H ${DOCKER_BUILD_PUSH_HOST} run poi-integration-test /bin/bash -c 'dotnet restore tests/IntegrationTests/IntegrationTests.csproj; dotnet test tests/IntegrationTests/IntegrationTests.csproj | tee /tmp/test; if grep \"Test Run Failed\" /tmp/test > /dev/null; then exit -1; else exit 0; fi'"
-        }
-    }
 }
     post { 
         always { 
