@@ -28,7 +28,8 @@ namespace poi.Controllers
                    Timestamp = DateTime.Now,
                    Deleted = false
                });
-               _context.SaveChanges()
+               _context.SaveChanges();
+            }
             
         }
 
